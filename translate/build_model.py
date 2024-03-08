@@ -300,16 +300,17 @@ class Queue:
     def popped_elements(self):
         return self.queue[:self.queue_pos]
 
-def compute_model(prog):
-    with timers.timing("Preparing model"):
+def compute_model(prog, quiet):
+    with timers.timing("Preparing model", quiet=quiet):
         rules = convert_rules(prog)
         unifier = Unifier(rules)
         # unifier.dump()
         fact_atoms = sorted(fact.atom for fact in prog.facts)
         queue = Queue(fact_atoms)
 
-    print("Generated %d rules." % len(rules))
-    with timers.timing("Computing model"):
+    if not quiet:
+        print("Generated %d rules." % len(rules))
+    with timers.timing("Computing model", quiet=quiet):
         relevant_atoms = 0
         auxiliary_atoms = 0
         while queue:
@@ -323,10 +324,11 @@ def compute_model(prog):
             for rule, cond_index in matches:
                 rule.update_index(next_atom, cond_index)
                 rule.fire(next_atom, cond_index, queue.push)
-    print("%d relevant atoms" % relevant_atoms)
-    print("%d auxiliary atoms" % auxiliary_atoms)
-    print("%d final queue length" % len(queue.queue))
-    print("%d total queue pushes" % queue.num_pushes)
+    if not quiet:
+        print("%d relevant atoms" % relevant_atoms)
+        print("%d auxiliary atoms" % auxiliary_atoms)
+        print("%d final queue length" % len(queue.queue))
+        print("%d total queue pushes" % queue.num_pushes)
     return queue.queue
 
 if __name__ == "__main__":

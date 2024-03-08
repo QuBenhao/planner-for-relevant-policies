@@ -421,10 +421,10 @@ def dump_task(init, goals, actions, axioms, axiom_layer_dict):
 def translate_task(strips_to_sas, ranges, translation_key,
                    mutex_dict, mutex_ranges, mutex_key,
                    init, goals,
-                   actions, axioms, metric, implied_facts):
-    with timers.timing("Processing axioms", block=True):
+                   actions, axioms, metric, implied_facts, quiet):
+    with timers.timing("Processing axioms", block=True, quiet=quiet):
         axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
-            actions, axioms, goals)
+            actions, axioms, goals, quiet=quiet)
     init = init + axiom_init
     #axioms.sort(key=lambda axiom: axiom.name)
     #for axiom in axioms:
@@ -498,10 +498,10 @@ def unsolvable_sas_task(msg):
                              operators, axioms, metric)
 
 
-def pddl_to_sas(task):
-    with timers.timing("Instantiating", block=True):
+def pddl_to_sas(task, quiet):
+    with timers.timing("Instantiating", block=True, quiet=quiet):
         (relaxed_reachable, atoms, actions, axioms,
-         reachable_action_params) = instantiate.explore(task)
+         reachable_action_params) = instantiate.explore(task, quiet)
 
     if not relaxed_reachable:
         return unsolvable_sas_task("No relaxed solution")
@@ -514,45 +514,46 @@ def pddl_to_sas(task):
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
 
-    with timers.timing("Computing fact groups", block=True):
+    with timers.timing("Computing fact groups", block=True, quiet=quiet):
         groups, mutex_groups, translation_key = fact_groups.compute_groups(
             task, atoms, reachable_action_params,
-            partial_encoding=USE_PARTIAL_ENCODING)
+            partial_encoding=USE_PARTIAL_ENCODING, quiet=quiet)
 
-    with timers.timing("Building STRIPS to SAS dictionary"):
+    with timers.timing("Building STRIPS to SAS dictionary", quiet=quiet):
         ranges, strips_to_sas = strips_to_sas_dictionary(
             groups, assert_partial=USE_PARTIAL_ENCODING)
 
-    with timers.timing("Building dictionary for full mutex groups"):
+    with timers.timing("Building dictionary for full mutex groups", quiet=quiet):
         mutex_ranges, mutex_dict = strips_to_sas_dictionary(
             mutex_groups, assert_partial=False)
 
     if ADD_IMPLIED_PRECONDITIONS:
-        with timers.timing("Building implied facts dictionary..."):
+        with timers.timing("Building implied facts dictionary...", quiet=quiet):
             implied_facts = build_implied_facts(strips_to_sas, groups,
                                                 mutex_groups)
     else:
         implied_facts = {}
 
-    with timers.timing("Building mutex information", block=True):
+    with timers.timing("Building mutex information", block=True, quiet=quiet):
         mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
 
-    with timers.timing("Translating task", block=True):
+    with timers.timing("Translating task", block=True, quiet=quiet):
         sas_task = translate_task(
             strips_to_sas, ranges, translation_key,
             mutex_dict, mutex_ranges, mutex_key,
             task.init, goal_list, actions, axioms, task.use_min_cost_metric,
-            implied_facts)
+            implied_facts, quiet)
 
-    print("%d effect conditions simplified" %
-          simplified_effect_condition_counter)
-    print("%d implied preconditions added" %
-          added_implied_precondition_counter)
+    if not quiet:
+        print("%d effect conditions simplified" %
+              simplified_effect_condition_counter)
+        print("%d implied preconditions added" %
+              added_implied_precondition_counter)
 
     if DETECT_UNREACHABLE:
-        with timers.timing("Detecting unreachable propositions", block=True):
+        with timers.timing("Detecting unreachable propositions", block=True, quiet=quiet):
             try:
-                simplify.filter_unreachable_propositions(sas_task)
+                simplify.filter_unreachable_propositions(sas_task, quiet)
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
 
@@ -653,14 +654,14 @@ def parse_args():
     return argparser.parse_args()
 
 
-def main():
-    args = parse_args()
+def main(args):
+    quiet = args.quiet
 
-    timer = timers.Timer()
-    with timers.timing("Parsing", True):
+    timer = timers.Timer(quiet)
+    with timers.timing("Parsing", quiet=True):
         task = pddl.open(task_filename=args.task, domain_filename=args.domain)
 
-    with timers.timing("Normalizing task"):
+    with timers.timing("Normalizing task", quiet=quiet):
         normalize.normalize(task)
 
     task.INVARIANT_TIME_LIMIT = int(args.inv_limit)
@@ -672,18 +673,18 @@ def main():
                 if effect.literal.negated:
                     del action.effects[index]
 
-    sas_task = pddl_to_sas(task)
+    sas_task = pddl_to_sas(task, quiet)
 
     assert len(sas_task.operators) == len(set([o.name for o in sas_task.operators])), \
            "Error: Operator names (with parameters) must be unique"
 
-    dump_statistics(sas_task)
+    if not quiet:
+        dump_statistics(sas_task)
 
-    with timers.timing("Writing output"):
+    with timers.timing("Writing output", quiet=quiet):
         with open("output.sas", "w") as output_file:
             sas_task.output(output_file)
-    print("Done! %s" % timer)
+    if not quiet:
+        print("Done! %s" % timer)
 
-
-if __name__ == "__main__":
-    main()
+    return task

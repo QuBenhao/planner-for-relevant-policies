@@ -133,15 +133,15 @@ class VarValueRenaming(object):
             self.new_sizes.append(new_size)
             self.new_var_count += 1
 
-    def apply_to_task(self, task):
-        self.apply_to_variables(task.variables)
+    def apply_to_task(self, task, quiet=False):
+        self.apply_to_variables(task.variables, quiet)
         self.apply_to_mutexes(task.mutexes)
         self.apply_to_init(task.init)
         self.apply_to_goals(task.goal.pairs)
-        self.apply_to_operators(task.operators)
+        self.apply_to_operators(task.operators, quiet)
         self.apply_to_axioms(task.axioms)
 
-    def apply_to_variables(self, variables):
+    def apply_to_variables(self, variables, quiet):
         variables.ranges = self.new_sizes
         new_axiom_layers = [None] * self.new_var_count
         for old_no, new_no in enumerate(self.new_var_nos):
@@ -149,18 +149,18 @@ class VarValueRenaming(object):
                 new_axiom_layers[new_no] = variables.axiom_layers[old_no]
         assert None not in new_axiom_layers
         variables.axiom_layers = new_axiom_layers
-        self._apply_to_value_names(variables.value_names)
+        self._apply_to_value_names(variables.value_names, quiet)
 
-    def _apply_to_value_names(self, value_names):
+    def _apply_to_value_names(self, value_names, quiet):
         new_value_names = [[None] * size for size in self.new_sizes]
         for var_no, values in enumerate(value_names):
             for value, value_name in enumerate(values):
                 new_var_no, new_value = self.translate_pair((var_no, value))
                 if new_value is always_true:
-                    if DEBUG:
+                    if DEBUG and not quiet:
                         print("Removed true proposition: %s = %s" % (str(new_var_no), value_name))
                 elif new_value is always_false:
-                    if DEBUG:
+                    if DEBUG and not quiet:
                         print("Removed false proposition: %s = %s" % (str(new_var_no),value_name))
                 else:
                     new_value_names[new_var_no][new_value] = value_name
@@ -197,7 +197,7 @@ class VarValueRenaming(object):
         # This may propagate Impossible up.
         self.translate_pairs_in_place(goals)
 
-    def apply_to_operators(self, operators):
+    def apply_to_operators(self, operators, quiet):
         new_operators = []
         num_removed = 0
         for op in operators:
@@ -206,9 +206,10 @@ class VarValueRenaming(object):
                 new_operators.append(op)
             except (Impossible, DoesNothing):
                 num_removed += 1
-                if DEBUG:
+                if DEBUG and not quiet:
                     print("Removed operator: %s" % op.name)
-        print("%d operators removed" % num_removed)
+        if not quiet:
+            print("%d operators removed" % num_removed)
         operators[:] = new_operators
 
     def apply_to_axioms(self, axioms):
@@ -302,7 +303,7 @@ def build_renaming(dtgs):
     return renaming
 
 
-def filter_unreachable_propositions(sas_task):
+def filter_unreachable_propositions(sas_task, quiet):
     # This procedure is a bit of an afterthought, and doesn't fit the
     # overall architecture of the translator too well. We filter away
     # unreachable propositions here, and then prune away variables
@@ -326,5 +327,6 @@ def filter_unreachable_propositions(sas_task):
     renaming = build_renaming(dtgs)
     # apply_to_task may propagate up Impossible if the goal is simplified
     # to False.
-    renaming.apply_to_task(sas_task)
-    print("%d propositions removed" % renaming.num_removed_values)
+    renaming.apply_to_task(sas_task, quiet)
+    if not quiet:
+        print("%d propositions removed" % renaming.num_removed_values)

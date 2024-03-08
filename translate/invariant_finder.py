@@ -87,9 +87,10 @@ def get_initial_invariants(task):
 MAX_CANDIDATES = 100000
 #MAX_TIME = 300 <-- This is now set in the PRP script and passed in as an argument
 
-def find_invariants(task, reachable_action_params):
+def find_invariants(task, reachable_action_params, quiet=False):
     candidates = deque(get_initial_invariants(task))
-    print(len(candidates), "initial candidates")
+    if not quiet:
+        print(len(candidates), "initial candidates")
     seen_candidates = set(candidates)
 
     balance_checker = BalanceChecker(task, reachable_action_params)
@@ -129,10 +130,10 @@ def useful_groups(invariants, initial_facts):
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
-def get_groups(task, reachable_action_params=None):
-    with timers.timing("Finding invariants", block=True):
-        invariants = sorted(find_invariants(task, reachable_action_params))
-    with timers.timing("Checking invariant weight"):
+def get_groups(task, reachable_action_params=None,quiet=False):
+    with timers.timing("Finding invariants", block=True, quiet=quiet):
+        invariants = sorted(find_invariants(task, reachable_action_params, quiet))
+    with timers.timing("Checking invariant weight", quiet=quiet):
         result = list(useful_groups(invariants, task.init))
     return result
 

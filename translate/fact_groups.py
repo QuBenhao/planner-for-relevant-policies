@@ -68,7 +68,7 @@ class GroupCoverQueue:
                 self.groups_by_size[len(candidate)].append(candidate)
             self.max_size -= 1
 
-def choose_groups(groups, reachable_facts, partial_encoding=True):
+def choose_groups(groups, reachable_facts, partial_encoding=True, quiet=False):
     queue = GroupCoverQueue(groups, partial_encoding=partial_encoding)
     uncovered_facts = reachable_facts.copy()
     result = []
@@ -76,7 +76,8 @@ def choose_groups(groups, reachable_facts, partial_encoding=True):
         group = queue.pop()
         uncovered_facts.difference_update(group)
         result.append(group)
-    print(len(uncovered_facts), "uncovered facts")
+    if not quiet:
+        print(len(uncovered_facts), "uncovered facts")
     result += [[fact] for fact in uncovered_facts]
     return result
 
@@ -106,10 +107,10 @@ def collect_all_mutex_groups(groups, atoms):
 def sort_groups(groups):
     return sorted(sorted(group) for group in groups)
 
-def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
-    groups = invariant_finder.get_groups(task, reachable_action_params)
+def compute_groups(task, atoms, reachable_action_params, partial_encoding=True, quiet=False):
+    groups = invariant_finder.get_groups(task, reachable_action_params, quiet=quiet)
 
-    with timers.timing("Instantiating groups"):
+    with timers.timing("Instantiating groups", quiet=quiet):
         groups = instantiate_groups(groups, task, atoms)
 
     # Sort here already to get deterministic mutex groups.
@@ -117,15 +118,15 @@ def compute_groups(task, atoms, reachable_action_params, partial_encoding=True):
     # TODO: I think that collect_all_mutex_groups should do the same thing
     #       as choose_groups with partial_encoding=False, so these two should
     #       be unified.
-    with timers.timing("Collecting mutex groups"):
+    with timers.timing("Collecting mutex groups",quiet=quiet):
         mutex_groups = collect_all_mutex_groups(groups, atoms)
-    with timers.timing("Choosing groups", block=True):
-        groups = choose_groups(groups, atoms, partial_encoding=partial_encoding)
+    with timers.timing("Choosing groups", block=True, quiet=quiet):
+        groups = choose_groups(groups, atoms, partial_encoding=partial_encoding, quiet=quiet)
     groups = sort_groups(groups)
-    with timers.timing("Building translation key"):
+    with timers.timing("Building translation key", quiet=quiet):
         translation_key = build_translation_key(groups)
 
-    if DEBUG:
+    if DEBUG and not quiet:
         for group in groups:
             if len(group) >= 2:
                 print("{%s}" % ", ".join(map(str, group)))

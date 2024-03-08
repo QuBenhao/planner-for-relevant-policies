@@ -70,10 +70,10 @@ def instantiate(task, model):
     return (relaxed_reachable, fluent_facts, instantiated_actions,
             sorted(instantiated_axioms), reachable_action_parameters)
 
-def explore(task):
-    prog = pddl_to_prolog.translate(task)
-    model = build_model.compute_model(prog)
-    with timers.timing("Completing instantiation"):
+def explore(task, quiet=False):
+    prog = pddl_to_prolog.translate(task, quiet)
+    model = build_model.compute_model(prog, quiet)
+    with timers.timing("Completing instantiation", quiet=quiet):
         return instantiate(task, model)
 
 if __name__ == "__main__":

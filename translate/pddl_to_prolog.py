@@ -153,14 +153,14 @@ def translate_facts(prog, task):
         if isinstance(fact, pddl.Atom):
             prog.add_fact(fact)
 
-def translate(task):
+def translate(task, quiet=False):
     # Note: The function requires that the task has been normalized.
-    with timers.timing("Generating Datalog program"):
+    with timers.timing("Generating Datalog program", quiet=quiet):
         prog = PrologProgram()
         translate_facts(prog, task)
         for conditions, effect in normalize.build_exploration_rules(task):
             prog.add_rule(Rule(conditions, effect))
-    with timers.timing("Normalizing Datalog program", block=True):
+    with timers.timing("Normalizing Datalog program", block=True, quiet=quiet):
         # Using block=True because normalization can output some messages
         # in rare cases.
         prog.normalize()

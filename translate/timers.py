@@ -9,7 +9,8 @@ import time
 
 
 class Timer(object):
-    def __init__(self):
+    def __init__(self, quiet=False):
+        self.quiet = quiet
         self.start_time = time.time()
         self.start_clock = self._clock()
 
@@ -18,22 +19,26 @@ class Timer(object):
         return times[0] + times[1]
 
     def __str__(self):
+        if self.quiet:
+            return ""
         return "[%.3fs CPU, %.3fs wall-clock]" % (
             self._clock() - self.start_clock,
             time.time() - self.start_time)
 
 
 @contextlib.contextmanager
-def timing(text, block=False):
+def timing(text, block=False, quiet=False):
     timer = Timer()
-    if block:
-        print("%s..." % text)
-    else:
-        print("%s..." % text, end=' ')
+    if not quiet:
+        if block:
+            print("%s..." % text)
+        else:
+            print("%s..." % text, end=' ')
     sys.stdout.flush()
     yield
-    if block:
-        print("%s: %s" % (text, timer))
-    else:
-        print(timer)
+    if not quiet:
+        if block:
+            print("%s: %s" % (text, timer))
+        else:
+            print(timer)
     sys.stdout.flush()
