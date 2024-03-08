@@ -5,13 +5,14 @@ from __future__ import print_function, with_statement
 
 import sys
 
+
 def python_version_supported():
     major, minor = sys.version_info[:2]
     return (major == 2 and minor >= 7) or (major, minor) >= (3, 2)
 
+
 if not python_version_supported():
     sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
-
 
 import argparse
 from collections import defaultdict
@@ -93,19 +94,19 @@ def translate_strips_conditions_aux(conditions, dictionary, ranges):
 
     for fact in conditions:
         if fact.negated:
-           ## Note  Here we use a different solution than in Sec. 10.6.4
-           ##       of the thesis. Compare the last sentences of the third
-           ##       paragraph of the section.
-           ##       We could do what is written there. As a test case,
-           ##       consider Airport ADL tasks with only one airport, where
-           ##       (occupied ?x) variables are encoded in a single variable,
-           ##       and conditions like (not (occupied ?x)) do occur in
-           ##       preconditions.
-           ##       However, here we avoid introducing new derived predicates
-           ##       by treat the negative precondition as a disjunctive
-           ##       precondition and expanding it by "multiplying out" the
-           ##       possibilities.  This can lead to an exponential blow-up so
-           ##       it would be nice to choose the behaviour as an option.
+            ## Note  Here we use a different solution than in Sec. 10.6.4
+            ##       of the thesis. Compare the last sentences of the third
+            ##       paragraph of the section.
+            ##       We could do what is written there. As a test case,
+            ##       consider Airport ADL tasks with only one airport, where
+            ##       (occupied ?x) variables are encoded in a single variable,
+            ##       and conditions like (not (occupied ?x)) do occur in
+            ##       preconditions.
+            ##       However, here we avoid introducing new derived predicates
+            ##       by treat the negative precondition as a disjunctive
+            ##       precondition and expanding it by "multiplying out" the
+            ##       possibilities.  This can lead to an exponential blow-up so
+            ##       it would be nice to choose the behaviour as an option.
             done = False
             new_condition = {}
             atom = pddl.Atom(fact.predicate, fact.args)  # force positive
@@ -179,7 +180,7 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict,
     sas_operators = []
 
     if len(conditions) > 1:
-        suffixes = [("_v%d" % (i+1)) for i in range(len(conditions))]
+        suffixes = [("_v%d" % (i + 1)) for i in range(len(conditions))]
     else:
         suffixes = ['']
 
@@ -211,8 +212,7 @@ def negate_and_translate_condition(condition, dictionary, ranges, mutex_dict,
 
 
 def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
-                                  mutex_ranges, implied_facts, condition, suffix = ''):
-
+                                  mutex_ranges, implied_facts, condition, suffix=''):
     # collect all add effects
     effects_by_variable = defaultdict(lambda: defaultdict(list))
     # effects_by_variables: var -> val -> list(FDR conditions)
@@ -426,8 +426,8 @@ def translate_task(strips_to_sas, ranges, translation_key,
         axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
             actions, axioms, goals, quiet=quiet)
     init = init + axiom_init
-    #axioms.sort(key=lambda axiom: axiom.name)
-    #for axiom in axioms:
+    # axioms.sort(key=lambda axiom: axiom.name)
+    # for axiom in axioms:
     #  axiom.dump()
 
     if DUMP_TASK:
@@ -504,7 +504,8 @@ def pddl_to_sas(task, quiet):
          reachable_action_params) = instantiate.explore(task, quiet)
 
     if not relaxed_reachable:
-        return unsolvable_sas_task("No relaxed solution")
+        return None
+        # return unsolvable_sas_task("No relaxed solution")
 
     # HACK! Goals should be treated differently.
     if isinstance(task.goal, pddl.Conjunction):
@@ -675,8 +676,11 @@ def main(args):
 
     sas_task = pddl_to_sas(task, quiet)
 
+    if sas_task is None:
+        return None
+
     assert len(sas_task.operators) == len(set([o.name for o in sas_task.operators])), \
-           "Error: Operator names (with parameters) must be unique"
+        "Error: Operator names (with parameters) must be unique"
 
     if not quiet:
         dump_statistics(sas_task)

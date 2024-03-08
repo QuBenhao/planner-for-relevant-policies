@@ -8,6 +8,7 @@ import sys
 
 DEBUG = True
 
+
 # TODO:
 # This is all quite hackish and would be easier if the translator were
 # restructured so that more information is immediately available for
@@ -92,17 +93,20 @@ def build_dtgs(task):
 always_false = object()
 always_true = object()
 
+
 class Impossible(Exception):
     pass
+
 
 class DoesNothing(Exception):
     pass
 
+
 class VarValueRenaming(object):
     def __init__(self):
-        self.new_var_nos = []   # indexed by old var_no
-        self.new_values = []    # indexed by old var_no and old value
-        self.new_sizes = []     # indexed by new var_no
+        self.new_var_nos = []  # indexed by old var_no
+        self.new_values = []  # indexed by old var_no and old value
+        self.new_sizes = []  # indexed by new var_no
         self.new_var_count = 0
         self.num_removed_values = 0
 
@@ -161,7 +165,7 @@ class VarValueRenaming(object):
                         print("Removed true proposition: %s = %s" % (str(new_var_no), value_name))
                 elif new_value is always_false:
                     if DEBUG and not quiet:
-                        print("Removed false proposition: %s = %s" % (str(new_var_no),value_name))
+                        print("Removed false proposition: %s = %s" % (str(new_var_no), value_name))
                 else:
                     new_value_names[new_var_no][new_value] = value_name
         assert all((None not in value_names) for value_names in new_value_names)
@@ -174,7 +178,7 @@ class VarValueRenaming(object):
             for var, val in mutex.facts:
                 new_var_no, new_value = self.translate_pair((var, val))
                 if (new_value is not always_true and
-                    new_value is not always_false):
+                        new_value is not always_false):
                     new_facts.append((new_var_no, new_value))
             if len(new_facts) >= 2:
                 mutex.facts = new_facts
@@ -239,10 +243,10 @@ class VarValueRenaming(object):
                 # effect that sets an always true value. Swallow this.
                 pass
         op.pre_post = new_pre_post
-        
+
         # HAZ: Allow operators that do nothing (in case it was a failed
         #      effect from a determinized action).
-        #if not new_pre_post:
+        # if not new_pre_post:
         #    raise DoesNothing
 
     def apply_to_axiom(self, axiom):
@@ -295,6 +299,7 @@ class VarValueRenaming(object):
                 assert new_var_no is not None
                 new_pairs.append((new_var_no, new_value))
         pairs[:] = new_pairs
+
 
 def build_renaming(dtgs):
     renaming = VarValueRenaming()

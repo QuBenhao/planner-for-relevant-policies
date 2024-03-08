@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import itertools
 
+
 class NegativeClause(object):
     # disjunction of inequalities
     def __init__(self, parts):
@@ -38,7 +39,7 @@ class Assignment(object):
 
     def __str__(self):
         conj = " and ".join(["(%s = %s)" % (v1, v2)
-                            for (v1, v2) in self.equalities])
+                             for (v1, v2) in self.equalities])
         return "(%s)" % conj
 
     def _compute_equivalence_classes(self):
@@ -162,5 +163,3 @@ class ConstraintSystem(object):
             if self._all_clauses_satisfiable(combined):
                 return True
         return False
-
-

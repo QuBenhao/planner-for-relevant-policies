@@ -10,6 +10,7 @@ import invariants
 import pddl
 import timers
 
+
 class BalanceChecker(object):
     def __init__(self, task, reachable_action_params):
         self.predicates_to_add_actions = defaultdict(set)
@@ -21,7 +22,7 @@ class BalanceChecker(object):
             heavy_act = action
             for eff in action.effects:
                 too_heavy_effects.append(eff)
-                if eff.parameters: # universal effect
+                if eff.parameters:  # universal effect
                     create_heavy_act = True
                     too_heavy_effects.append(eff.copy())
                 if not eff.literal.negated:
@@ -68,12 +69,14 @@ class BalanceChecker(object):
         else:
             return action
 
+
 def get_fluents(task):
     fluent_names = set()
     for action in task.actions:
         for eff in action.effects:
             fluent_names.add(eff.literal.predicate)
     return [pred for pred in task.predicates if pred.name in fluent_names]
+
 
 def get_initial_invariants(task):
     for predicate in get_fluents(task):
@@ -83,9 +86,12 @@ def get_initial_invariants(task):
             part = invariants.InvariantPart(predicate.name, order, omitted_arg)
             yield invariants.Invariant((part,))
 
+
 # Input file might be grounded, beware of too many invariant candidates
 MAX_CANDIDATES = 100000
-#MAX_TIME = 300 <-- This is now set in the PRP script and passed in as an argument
+
+
+# MAX_TIME = 300 <-- This is now set in the PRP script and passed in as an argument
 
 def find_invariants(task, reachable_action_params, quiet=False):
     candidates = deque(get_initial_invariants(task))
@@ -109,6 +115,7 @@ def find_invariants(task, reachable_action_params, quiet=False):
         if candidate.check_balance(balance_checker, enqueue_func):
             yield candidate
 
+
 def useful_groups(invariants, initial_facts):
     predicate_to_invariants = defaultdict(list)
     for invariant in invariants:
@@ -130,15 +137,18 @@ def useful_groups(invariants, initial_facts):
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
-def get_groups(task, reachable_action_params=None,quiet=False):
+
+def get_groups(task, reachable_action_params=None, quiet=False):
     with timers.timing("Finding invariants", block=True, quiet=quiet):
         invariants = sorted(find_invariants(task, reachable_action_params, quiet))
     with timers.timing("Checking invariant weight", quiet=quiet):
         result = list(useful_groups(invariants, task.init))
     return result
 
+
 if __name__ == "__main__":
     import normalize
+
     print("Parsing...")
     task = pddl.open()
     print("Normalizing...")
