@@ -12,12 +12,13 @@ from . import f_expression
 
 class Task(object):
     def __init__(self, domain_name, task_name, requirements,
-                 types, objects, predicates, functions, init, goal, actions, axioms, use_metric):
+                 types, objects, constants, predicates, functions, init, goal, actions, axioms, use_metric):
         self.domain_name = domain_name
         self.task_name = task_name
         self.requirements = requirements
         self.types = types
         self.objects = objects
+        self.constants = constants
         self.predicates = predicates
         self.functions = functions
         self.init = init
@@ -52,7 +53,7 @@ class Task(object):
             finalmsg="please check :constants and :objects definitions")
         init += [conditions.Atom("=", (obj.name, obj.name)) for obj in objects]
 
-        return Task(domain_name, task_name, requirements, types, objects,
+        return Task(domain_name, task_name, requirements, types, objects, constants,
                     predicates, functions, init, goal, actions, axioms, use_metric)
 
     def dump(self):

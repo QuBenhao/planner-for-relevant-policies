@@ -3,9 +3,9 @@
 from collections import defaultdict
 import itertools
 
-import constraints
-import pddl
-import tools
+from . import constraints
+from . import pddl
+from . import tools
 
 
 # Notes:

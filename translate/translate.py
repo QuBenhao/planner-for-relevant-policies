@@ -19,15 +19,15 @@ from collections import defaultdict
 from copy import deepcopy
 from itertools import product
 
-import axiom_rules
-import fact_groups
-import instantiate
-import normalize
-import pddl
-import sas_tasks
-import simplify
-import timers
-import tools
+from . import axiom_rules
+from . import fact_groups
+from . import instantiate
+from . import normalize
+from . import pddl
+from . import sas_tasks
+from . import simplify
+from . import timers
+from . import tools
 
 # TODO: The translator may generate trivial derived variables which are always
 # true, for example if there ia a derived predicate in the input that only
@@ -423,8 +423,7 @@ def translate_task(strips_to_sas, ranges, translation_key,
                    init, goals,
                    actions, axioms, metric, implied_facts, quiet):
     with timers.timing("Processing axioms", block=True, quiet=quiet):
-        axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(
-            actions, axioms, goals, quiet=quiet)
+        axioms, axiom_init, axiom_layer_dict = axiom_rules.handle_axioms(actions, axioms, goals, quiet=quiet)
     init = init + axiom_init
     # axioms.sort(key=lambda axiom: axiom.name)
     # for axiom in axioms:
