@@ -1,5 +1,5 @@
-from formula import Formula
-from predicate import Predicate
+from .formula import Formula
+from .predicate import Predicate
 
 
 class Action(object):

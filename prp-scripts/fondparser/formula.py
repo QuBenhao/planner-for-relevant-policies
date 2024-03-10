@@ -1,5 +1,5 @@
 
-from predicate import Predicate
+from .predicate import Predicate
 
 
 class Formula(object):

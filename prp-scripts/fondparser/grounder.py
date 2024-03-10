@@ -1,7 +1,7 @@
-from parser import Problem
-from action import Action
-from formula import Primitive, Forall, When, And
-from predicate import Predicate
+from .parser import Problem
+from .action import Action
+from .formula import Primitive, Forall, When, And
+from .predicate import Predicate
 import itertools
 
 
