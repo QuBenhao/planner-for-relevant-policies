@@ -113,7 +113,7 @@ def validate(dfile, pfile, sol, val):
         a = val.next_action(u)
 
         if not a:
-            G.node[nodes[u]]['label'] = 'X'
+            G.nodes[nodes[u]]['label'] = 'X'
             unhandled.append(u)
         else:
             i = 0
@@ -144,7 +144,7 @@ def validate(dfile, pfile, sol, val):
     print("\tStrong: %s" % str(0 == len(list(nx.simple_cycles(G)))), end='')
     print(" Strong Cyclic: %s" % str(G.number_of_nodes() == len(nx.single_source_shortest_path(G.reverse(), nodes[goal_state]))), end='')
 
-    write_dot(G, 'graph.dot')
+    nx.write_adjlist(G, 'graph.dot')
 
     with open('action.map', 'w') as f:
         for a in actions:
@@ -164,7 +164,7 @@ def validate(dfile, pfile, sol, val):
     if len(unhandled) > 0:
         print("Unhandled states: unhandled.states", end='')
 
-    print
+    print()
 
 
 def _convert_cond_effect(mapping, eff):

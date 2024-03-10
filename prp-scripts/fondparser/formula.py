@@ -231,7 +231,7 @@ class And(Formula):
             Inputs:
                 args:    list of formula objects
         """
-        args = filter(lambda x: not isinstance(x, And), args) + \
+        args = list(filter(lambda x: not isinstance(x, And), args)) + \
                [item for andarg in filter(lambda x: isinstance(x, And), args) for item in andarg.args]
 
         super(And, self).__init__("and", args)
@@ -416,8 +416,8 @@ class Primitive(Formula):
                 predicate:        Predicate object
         """
 
-        assert isinstance(predicate, Predicate),\
-            "First argument must be of Predicate class"
+        # assert isinstance(predicate, Predicate),\
+        #     "First argument must be of Predicate class"
         super(Primitive, self).__init__("Primitive", [])
         self.predicate = predicate
 
