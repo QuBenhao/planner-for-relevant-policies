@@ -1,10 +1,10 @@
-
 from fondparser.action import Action
 from fondparser.formula import *
 
 from itertools import product, chain
 
 DEBUG = False
+
 
 def normalize(op):
     effs = flatten(op)
@@ -14,19 +14,22 @@ def normalize(op):
                 effs[i] = And([effs[i]])
         op.effect = Oneof(effs)
 
+
 def flatten(op):
     return _flatten(op.effect)
 
+
 def combine(eff_lists):
     if DEBUG:
-        print "\nCombining:\n%s" % '\n'.join(map(str, eff_lists))
-        print "Result: %s\n" % [And(filter(lambda x: x != And([]), list(choice))) for choice in product(*eff_lists)]
+        print("\nCombining:\n%s" % '\n'.join(map(str, eff_lists)), end='')
+        print("Result: %s\n" % [And(filter(lambda x: x != And([]), list(choice))) for choice in product(*eff_lists)],
+              end='')
     return [And(filter(lambda x: x != And([]), list(choice))) for choice in product(*eff_lists)]
 
-def _flatten(eff):
 
+def _flatten(eff):
     if DEBUG:
-        print "Flattening %s" % str(eff)
+        print("Flattening %s" % str(eff), end='')
 
     if isinstance(eff, And):
         if 0 == len(eff.args):
@@ -42,5 +45,5 @@ def _flatten(eff):
 
     else:
         if DEBUG:
-            print "Base: %s" % str(eff)
+            print("Base: %s" % str(eff), end='')
         return [eff]

@@ -1,5 +1,4 @@
 
-
 POLICY = None
 
 
@@ -12,7 +11,7 @@ def _translate_grendel_fluent(f):
 def load(pol, fmap):
     global POLICY
 
-    print "\nLoading GRENDEL policy..."
+    print("\nLoading GRENDEL policy...", end = '')
 
     with open(pol, 'r') as f:
         file_lines = filter(lambda x: x != '', [line.rstrip("\n") for line in f.readlines()])
@@ -39,7 +38,7 @@ def load(pol, fmap):
 def next_action(s):
     global POLICY
 
-    for (n,p,a) in POLICY:
+    for (n ,p ,a) in POLICY:
         if 0 == len(n & s.fluents) and p <= s.fluents:
             return a
 
