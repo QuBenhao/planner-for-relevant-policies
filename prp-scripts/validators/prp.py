@@ -1,4 +1,5 @@
 
+
 ################################################################
 ##
 ##  Note: It is assumed that the policy file
@@ -22,10 +23,10 @@ def load(pol, fmap):
     global POLICY
     global FSAP
 
-    print("\nLoading PRP policy...", end = '')
+    print "\nLoading PRP policy..."
 
     with open(pol, 'r') as f:
-        file_lines = list(filter(lambda x: x != '', [line.rstrip("\n") for line in f.readlines()]))
+        file_lines = filter(lambda x: x != '', [line.rstrip("\n") for line in f.readlines()])
 
     POLICY = []
     FSAP = {}
@@ -67,10 +68,10 @@ def next_action(s):
     global POLICY
     global FSAP
 
-    for (n ,p ,a) in POLICY:
+    for (n,p,a) in POLICY:
         if 0 == len(n & s.fluents) and p <= s.fluents:
             ok = True
-            for (n2 ,p2) in FSAP.get(a, []):
+            for (n2,p2) in FSAP.get(a, []):
                 if 0 == len(n2 & s.fluents) and p2 <= s.fluents:
                     ok = False
             if ok:

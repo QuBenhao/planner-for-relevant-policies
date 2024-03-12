@@ -56,7 +56,7 @@ class VALAction:
 
 def validate(dfile, pfile, sol, val):
 
-    print("\nParsing the problem...", end='')
+    print "\nParsing the problem..."
 
     problem = grounder.GroundProblem(dfile, pfile)
 
@@ -81,7 +81,7 @@ def validate(dfile, pfile, sol, val):
                                       _convert_cond_effect(fluents, eff), op_name, unfluents)
                             for eff in flatten(op)]
 
-        #print("\n%s\n%s" % (op.name, '\n'.join(map(str, actions[op.name])))
+        #print "\n%s\n%s" % (op.name, '\n'.join(map(str, actions[op.name])))
 
     init_state = State(_convert_conjunction(fluents, problem.init))
     goal_state = State([-1])
@@ -98,7 +98,7 @@ def validate(dfile, pfile, sol, val):
 
     val.load(sol, fluents)
 
-    print("\nStarting the FOND simulation...", end='')
+    print "\nStarting the FOND simulation..."
 
     unhandled = []
 
@@ -107,21 +107,21 @@ def validate(dfile, pfile, sol, val):
         u = open_list.pop(0)
         assert nodes[u] in G
 
-        #print("\n--------\nHandling state:"
-        #print(_state_string(unfluents, u)
+        #print "\n--------\nHandling state:"
+        #print _state_string(unfluents, u)
 
         a = val.next_action(u)
 
         if not a:
-            G.nodes[nodes[u]]['label'] = 'X'
+            G.node[nodes[u]]['label'] = 'X'
             unhandled.append(u)
         else:
             i = 0
             for outcome in actions[a]:
 
                 v = progress(u, outcome, unfluents)
-                #print("\nNew state:"
-                #print(_state_string(unfluents, v)
+                #print "\nNew state:"
+                #print _state_string(unfluents, v)
                 i += 1
 
                 if v.is_goal(goal_fluents):
@@ -136,15 +136,15 @@ def validate(dfile, pfile, sol, val):
 
 
     # Analyze the final controller
-    print("\nSimulation finished!\n", end='')
-    print("\n-{ Controller Statistics }-\n", end='')
-    print("\t Nodes: %d" % G.number_of_nodes(), end='')
-    print("\t Edges: %d" % G.number_of_edges(), end='')
-    print("     Unhandled: %d" % len(unhandled), end='')
-    print("\tStrong: %s" % str(0 == len(list(nx.simple_cycles(G)))), end='')
-    print(" Strong Cyclic: %s" % str(G.number_of_nodes() == len(nx.single_source_shortest_path(G.reverse(), nodes[goal_state]))), end='')
+    print "\nSimulation finished!\n"
+    print "\n-{ Controller Statistics }-\n"
+    print "\t Nodes: %d" % G.number_of_nodes()
+    print "\t Edges: %d" % G.number_of_edges()
+    print "     Unhandled: %d" % len(unhandled)
+    print "\tStrong: %s" % str(0 == len(list(nx.simple_cycles(G))))
+    print " Strong Cyclic: %s" % str(G.number_of_nodes() == len(nx.single_source_shortest_path(G.reverse(), nodes[goal_state])))
 
-    nx.write_adjlist(G, 'graph.dot')
+    write_dot(G, 'graph.dot')
 
     with open('action.map', 'w') as f:
         for a in actions:
@@ -159,12 +159,12 @@ def validate(dfile, pfile, sol, val):
             for s in unhandled:
                 f.write("\n%s\n" % _state_string(unfluents, s))
 
-    print("\n     Plan output: graph.dot", end='')
-    print("  Action mapping: action.map", end='')
+    print "\n     Plan output: graph.dot"
+    print "  Action mapping: action.map"
     if len(unhandled) > 0:
-        print("Unhandled states: unhandled.states", end='')
+        print "Unhandled states: unhandled.states"
 
-    print()
+    print
 
 
 def _convert_cond_effect(mapping, eff):
@@ -201,8 +201,8 @@ def progress(s, o, m):
         "Failed to progress %s:\nPrecondition: %s\nState:\n%s" % \
         (o.name, str(o.pres), _state_string(m, s))
 
-    #print("\nProgressing the following operator:"
-    #print((o)
+    #print "\nProgressing the following operator:"
+    #print (o)
 
     adds = set()
     dels = set()
@@ -218,7 +218,7 @@ def progress(s, o, m):
                     adds.add(reff)
 
     if 0 != len(adds & dels):
-        print("Warning: Conflicting adds and deletes on action %s" % str(o), end='')
+        print "Warning: Conflicting adds and deletes on action %s" % str(o)
 
     return State(((s.fluents - dels) | adds))
 
@@ -227,8 +227,8 @@ if __name__ == '__main__':
     try:
         (dom, prob, sol, interp) = os.sys.argv[1:]
     except:
-        print("\nError with input.", end='')
-        print(USAGE_STRING, end='')
+        print "\nError with input."
+        print USAGE_STRING
         os.sys.exit(1)
 
     validate(dom, prob, sol, importlib.import_module("validators.%s" % interp))
